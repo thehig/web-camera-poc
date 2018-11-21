@@ -5,33 +5,47 @@
         text-align: center;
         display: block;
       }
+
+      .hidden {
+        display: none;
+      }
     </style>
+
     <div id="screenshot" style="text-align:center;">
-      <a href="https://github.com/thehig/web-camera-poc/blob/master/public/index.html">Source</a>
+      <a
+        href="https://github.com/thehig/web-camera-poc/blob/master/public/index.html"
+        >Source</a
+      >
       <video class="videostream" autoplay=""></video>
       <img id="screenshot-img" />
-      <p><button class="capture-button">Capture video</button></p>
-      <p><button id="screenshot-button" disabled="">Take screenshot</button></p>
+      <p><button id="btnCapture">Capture video</button></p>
+      <p><button id="btnScreenshot" disabled="">Take screenshot</button></p>
     </div>
 
     <script type="text/javascript">
-      // Buttons
-      const captureVideoButton = document.querySelector(
-        "#screenshot .capture-button"
-      );
-      const screenshotButton = document.querySelector("#screenshot-button");
-      // Video Element
+      const btnCapture = document.querySelector("#btnCapture");
+      const btnScreenshot = document.querySelector("#btnScreenshot");
       const video = document.querySelector("#screenshot video");
-      // Canvas to render video into
-      const canvas = document.createElement("canvas");
-      // Image to render canvas into
       const img = document.querySelector("#screenshot img");
-      
+      const canvas = document.createElement("canvas");
+
       let streamReference;
       // Connect stream to video & enable screenshot button
-      function handleSuccess(stream) {
-        screenshotButton.disabled = false;
+      function startStream(stream) {
         video.srcObject = streamReference = stream;
+
+        btnScreenshot.disabled = false;
+        video.classList.remove("hidden");
+        img.classList.add("hidden");
+      }
+
+      function stopStream() {
+        let track = streamReference.getTracks()[0];
+        track.stop();
+
+        btnScreenshot.disabled = true;
+        video.classList.add("hidden");
+        img.classList.remove("hidden");
       }
 
       // Alert error
@@ -41,24 +55,21 @@
       }
 
       // Initialize camera feed
-      captureVideoButton.onclick = function() {
+      btnCapture.onclick = function() {
         navigator.mediaDevices
           .getUserMedia({ video: true })
-          .then(handleSuccess)
+          .then(startStream)
           .catch(handleError);
       };
 
       // Take screenshot
-      screenshotButton.onclick = video.onclick = function() {
+      btnScreenshot.onclick = video.onclick = function() {
         canvas.width = video.videoWidth;
         canvas.height = video.videoHeight;
         // draw video to canvas
         canvas.getContext("2d").drawImage(video, 0, 0);
         // draw canvas to image
         img.src = canvas.toDataURL("image/webp");
-
-        let track = streamReference.getTracks()[0];
-        track.stop();
       };
     </script>
   </body>
