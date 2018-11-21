@@ -28,7 +28,7 @@
 
       captureVideoButton.onclick = function() {
         navigator.mediaDevices
-          .getUserMedia(constraints)
+          .getUserMedia()
           .then(handleSuccess)
           .catch(handleError);
       };
