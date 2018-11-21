@@ -12,6 +12,7 @@ app.get("/", function(req, res) {
 
 app.post("/api/images", (req, res) => {
   console.log(req.body);
+  res.end('Image uploaded');
 });
 
 app.listen(port, () => console.log(`Listening on port: ${port}`));
