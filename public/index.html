@@ -74,7 +74,7 @@
       function showCameraRunningUI() {
         btnCapture.disabled = true;
         btnScreenshot.disabled = false;
-        btnSwitchCamera.disabled = true;
+        // btnSwitchCamera.disabled = true;
         video.classList.remove("hidden");
         img.classList.add("hidden");
       }
@@ -82,7 +82,7 @@
       function showCameraStoppedUI() {
         btnCapture.disabled = false;
         btnScreenshot.disabled = true;
-        btnSwitchCamera.disabled = false;
+        // btnSwitchCamera.disabled = false;
         video.classList.add("hidden");
         img.classList.remove("hidden");
       }
@@ -95,7 +95,7 @@
       // ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
       // Connect stream to video element
       function startStream() {
-        navigator.mediaDevices
+        return navigator.mediaDevices
           .getUserMedia(constraints)
           .then(stream => {
             video.srcObject = stream;
@@ -111,7 +111,7 @@
       // stop() the video source track
       function stopStream() {
         if (!video.srcObject) return; // Stream hasn't been started
-        video.srcObject.getTracks()[0].stop();
+        return video.srcObject.getTracks()[0].stop();
       }
 
       //  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
@@ -172,6 +172,10 @@
       btnSwitchCamera.onclick = function() {
         front = !front;
         configureCamera();
+        stopStream().then(() => {
+          startStream();
+          showCameraRunningUI();
+        });
       };
       
       // ██╗███╗   ██╗██╗████████╗██╗ █████╗ ██╗         ███████╗████████╗ █████╗ ████████╗███████╗
