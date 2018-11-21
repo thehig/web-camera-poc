@@ -16,6 +16,7 @@
         href="https://github.com/thehig/web-camera-poc/blob/master/public/index.html"
         >Source</a
       >
+      <p>Click buttons or image to toggle between camera and snapshot</p>
       <video class="videostream" autoplay=""></video>
       <img id="screenshot-img" />
       <p><button id="btnCapture">Capture video</button></p>
@@ -29,20 +30,25 @@
       const img = document.querySelector("#screenshot img");
       const canvas = document.createElement("canvas");
 
-      let streamReference;
-      // Connect stream to video & enable screenshot button
       function startStream(stream) {
-        video.srcObject = streamReference = stream;
-
+        // Connect stream to video element
+        video.srcObject = stream;
+        
+        // Show appropriate UI state
+        btnCapture.disabled = true;
         btnScreenshot.disabled = false;
         video.classList.remove("hidden");
         img.classList.add("hidden");
       }
 
       function stopStream() {
-        let track = streamReference.getTracks()[0];
-        track.stop();
+        if(!video.srcObject) return; // Stream hasn't been started
 
+        // Stop stream
+        video.srcObject.getTracks()[0].stop();
+
+        // Show appropriate UI state
+        btnCapture.disabled = false;
         btnScreenshot.disabled = true;
         video.classList.add("hidden");
         img.classList.remove("hidden");
@@ -55,7 +61,7 @@
       }
 
       // Initialize camera feed
-      btnCapture.onclick = function() {
+      btnCapture.onclick = img.onclick = function() {
         navigator.mediaDevices
           .getUserMedia({ video: true })
           .then(startStream)
@@ -70,6 +76,8 @@
         canvas.getContext("2d").drawImage(video, 0, 0);
         // draw canvas to image
         img.src = canvas.toDataURL("image/webp");
+
+        stopStream();
       };
     </script>
   </body>
