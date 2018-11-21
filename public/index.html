@@ -26,11 +26,12 @@
       const canvas = document.createElement("canvas");
       // Image to render canvas into
       const img = document.querySelector("#screenshot img");
-
+      
+      let streamReference;
       // Connect stream to video & enable screenshot button
       function handleSuccess(stream) {
         screenshotButton.disabled = false;
-        video.srcObject = stream;
+        video.srcObject = streamReference = stream;
       }
 
       // Alert error
@@ -55,6 +56,9 @@
         canvas.getContext("2d").drawImage(video, 0, 0);
         // draw canvas to image
         img.src = canvas.toDataURL("image/webp");
+
+        let track = streamReference.getTracks()[0];
+        track.stop();
       };
     </script>
   </body>
