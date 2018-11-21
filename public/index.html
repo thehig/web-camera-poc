@@ -21,40 +21,118 @@
       <img id="screenshot-img" />
       <p><button id="btnCapture">Capture video</button></p>
       <p><button id="btnScreenshot" disabled="">Take screenshot</button></p>
+      <p><button id="btnSwitchCamera">Switch Camera</button></p>
     </div>
 
     <script type="text/javascript">
-      const btnCapture = document.querySelector("#btnCapture");
-      const btnScreenshot = document.querySelector("#btnScreenshot");
+      // ███████╗██╗     ███████╗███╗   ███╗███████╗███╗   ██╗████████╗███████╗
+      // ██╔════╝██║     ██╔════╝████╗ ████║██╔════╝████╗  ██║╚══██╔══╝██╔════╝
+      // █████╗  ██║     █████╗  ██╔████╔██║█████╗  ██╔██╗ ██║   ██║   ███████╗
+      // ██╔══╝  ██║     ██╔══╝  ██║╚██╔╝██║██╔══╝  ██║╚██╗██║   ██║   ╚════██║
+      // ███████╗███████╗███████╗██║ ╚═╝ ██║███████╗██║ ╚████║   ██║   ███████║
+      // ╚══════╝╚══════╝╚══════╝╚═╝     ╚═╝╚══════╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
+
       const video = document.querySelector("#screenshot video");
       const img = document.querySelector("#screenshot img");
+      const btnCapture = document.querySelector("#btnCapture");
+      const btnScreenshot = document.querySelector("#btnScreenshot");
+      const btnSwitchCamera = document.querySelector("#btnSwitchCamera");
       const canvas = document.createElement("canvas");
 
-      function startStream(stream) {
-        // Connect stream to video element
-        video.srcObject = stream;
+      //  ██████╗ ██████╗ ███╗   ██╗███████╗████████╗██████╗  █████╗ ██╗███╗   ██╗████████╗███████╗
+      // ██╔════╝██╔═══██╗████╗  ██║██╔════╝╚══██╔══╝██╔══██╗██╔══██╗██║████╗  ██║╚══██╔══╝██╔════╝
+      // ██║     ██║   ██║██╔██╗ ██║███████╗   ██║   ██████╔╝███████║██║██╔██╗ ██║   ██║   ███████╗
+      // ██║     ██║   ██║██║╚██╗██║╚════██║   ██║   ██╔══██╗██╔══██║██║██║╚██╗██║   ██║   ╚════██║
+      // ╚██████╗╚██████╔╝██║ ╚████║███████║   ██║   ██║  ██║██║  ██║██║██║ ╚████║   ██║   ███████║
+      //  ╚═════╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝   ╚═╝   ╚═╝  ╚═╝╚═╝  ╚═╝╚═╝╚═╝  ╚═══╝   ╚═╝   ╚══════╝
 
-        // Show appropriate UI state
+      let front = true;
+      let constraints;
+
+      // Configure the constraints & UI
+      function configureCamera() {
+        // Reference: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
+        constraints = {
+          video: {
+            width: { min: 776, ideal: 720, max: 1080 },
+            height: { min: 1024, ideal: 1280, max: 1920 },
+            facingMode: front ? "user" : "environment"
+          }
+        };
+
+        btnSwitchCamera.innerText =
+          "Switch Camera. (Currently " + constraints.video.facingMode + ")";
+      }
+
+      // ██╗   ██╗██╗    ███████╗████████╗ █████╗ ████████╗███████╗
+      // ██║   ██║██║    ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
+      // ██║   ██║██║    ███████╗   ██║   ███████║   ██║   █████╗
+      // ██║   ██║██║    ╚════██║   ██║   ██╔══██║   ██║   ██╔══╝
+      // ╚██████╔╝██║    ███████║   ██║   ██║  ██║   ██║   ███████╗
+      //  ╚═════╝ ╚═╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+
+      function showCameraRunningUI() {
         btnCapture.disabled = true;
         btnScreenshot.disabled = false;
+        btnSwitchCamera.disabled = true;
         video.classList.remove("hidden");
         img.classList.add("hidden");
       }
 
-      function stopStream() {
-        if (!video.srcObject) return; // Stream hasn't been started
-
-        // Stop stream
-        video.srcObject.getTracks()[0].stop();
-
-        // Show appropriate UI state
+      function showCameraStoppedUI() {
         btnCapture.disabled = false;
         btnScreenshot.disabled = true;
+        btnSwitchCamera.disabled = false;
         video.classList.add("hidden");
         img.classList.remove("hidden");
       }
 
-      function uploadImage() {
+      // ███████╗████████╗██████╗ ███████╗ █████╗ ███╗   ███╗
+      // ██╔════╝╚══██╔══╝██╔══██╗██╔════╝██╔══██╗████╗ ████║
+      // ███████╗   ██║   ██████╔╝█████╗  ███████║██╔████╔██║
+      // ╚════██║   ██║   ██╔══██╗██╔══╝  ██╔══██║██║╚██╔╝██║
+      // ███████║   ██║   ██║  ██║███████╗██║  ██║██║ ╚═╝ ██║
+      // ╚══════╝   ╚═╝   ╚═╝  ╚═╝╚══════╝╚═╝  ╚═╝╚═╝     ╚═╝
+      // Connect stream to video element
+      function startStream() {
+        navigator.mediaDevices
+          .getUserMedia(constraints)
+          .then(stream => {
+            video.srcObject = stream;
+            showCameraRunningUI();
+          })
+          .catch(err => {
+            console.log(err);
+            showCameraStoppedUI();
+            alert(err);
+          });
+      }
+
+      // stop() the video source track
+      function stopStream() {
+        if (!video.srcObject) return; // Stream hasn't been started
+        video.srcObject.getTracks()[0].stop();
+      }
+
+      //  █████╗  ██████╗████████╗██╗ ██████╗ ███╗   ██╗███████╗
+      // ██╔══██╗██╔════╝╚══██╔══╝██║██╔═══██╗████╗  ██║██╔════╝
+      // ███████║██║        ██║   ██║██║   ██║██╔██╗ ██║███████╗
+      // ██╔══██║██║        ██║   ██║██║   ██║██║╚██╗██║╚════██║
+      // ██║  ██║╚██████╗   ██║   ██║╚██████╔╝██║ ╚████║███████║
+      // ╚═╝  ╚═╝ ╚═════╝   ╚═╝   ╚═╝ ╚═════╝ ╚═╝  ╚═══╝╚══════╝
+
+      // Render video frame to data url
+      function snapshotVideo() {
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        // draw video to canvas
+        canvas.getContext("2d").drawImage(video, 0, 0);
+        // draw canvas to image
+        return canvas.toDataURL("image/webp");
+      }
+
+      // XHR POST value as JSON to '/api/images'
+      function upload(value) {
         var http = new XMLHttpRequest();
         var url = "/api/images";
         http.open("POST", url, true);
@@ -68,35 +146,42 @@
           }
         };
 
-        http.send(JSON.stringify({ value: img.src }));
+        http.send(JSON.stringify({ value: value }));
       }
 
-      // Alert error
-      function handleError(err) {
-        console.log(err);
-        alert(err);
-      }
+      //  ██████╗ ███╗   ██╗     ██████╗██╗     ██╗ ██████╗██╗  ██╗
+      // ██╔═══██╗████╗  ██║    ██╔════╝██║     ██║██╔════╝██║ ██╔╝
+      // ██║   ██║██╔██╗ ██║    ██║     ██║     ██║██║     █████╔╝
+      // ██║   ██║██║╚██╗██║    ██║     ██║     ██║██║     ██╔═██╗
+      // ╚██████╔╝██║ ╚████║    ╚██████╗███████╗██║╚██████╗██║  ██╗
+      //  ╚═════╝ ╚═╝  ╚═══╝     ╚═════╝╚══════╝╚═╝ ╚═════╝╚═╝  ╚═╝
 
-      // Initialize camera feed
+      // Start camera stream
       btnCapture.onclick = img.onclick = function() {
-        navigator.mediaDevices
-          .getUserMedia({ video: true })
-          .then(startStream)
-          .catch(handleError);
+        startStream();
       };
-
-      // Take screenshot
+      // Take screenshot & upload
       btnScreenshot.onclick = video.onclick = function() {
-        canvas.width = video.videoWidth;
-        canvas.height = video.videoHeight;
-        // draw video to canvas
-        canvas.getContext("2d").drawImage(video, 0, 0);
-        // draw canvas to image
-        img.src = canvas.toDataURL("image/webp");
-
+        let source = snapshotVideo();
+        img.src = source;
+        showCameraStoppedUI();
         stopStream();
-        uploadImage();
+        upload(source);
       };
+      // Handle camera switching
+      btnSwitchCamera.onclick = function() {
+        front = !front;
+        configureCamera();
+      };
+      
+      // ██╗███╗   ██╗██╗████████╗██╗ █████╗ ██╗         ███████╗████████╗ █████╗ ████████╗███████╗
+      // ██║████╗  ██║██║╚══██╔══╝██║██╔══██╗██║         ██╔════╝╚══██╔══╝██╔══██╗╚══██╔══╝██╔════╝
+      // ██║██╔██╗ ██║██║   ██║   ██║███████║██║         ███████╗   ██║   ███████║   ██║   █████╗  
+      // ██║██║╚██╗██║██║   ██║   ██║██╔══██║██║         ╚════██║   ██║   ██╔══██║   ██║   ██╔══╝  
+      // ██║██║ ╚████║██║   ██║   ██║██║  ██║███████╗    ███████║   ██║   ██║  ██║   ██║   ███████╗
+      // ╚═╝╚═╝  ╚═══╝╚═╝   ╚═╝   ╚═╝╚═╝  ╚═╝╚══════╝    ╚══════╝   ╚═╝   ╚═╝  ╚═╝   ╚═╝   ╚══════╝
+      showCameraStoppedUI();
+      configureCamera();
     </script>
   </body>
 </html>
