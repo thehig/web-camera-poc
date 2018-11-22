@@ -188,7 +188,7 @@
         // draw video to canvas
         canvas.getContext("2d").drawImage(video, 0, 0);
         // draw canvas to image
-        return canvas.toDataURL("image/webp");
+        return canvas.toDataURL("image/jpeg", 1.0);
       }
 
       // XHR POST value as JSON to '/api/images'
