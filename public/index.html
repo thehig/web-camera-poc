@@ -34,21 +34,25 @@
 
       .middle {
         height: 80vh;
+        width: auto;
+        margin: 0 auto;
+        position: relative;
+      }
+
+      .middle img {
+        height: 100%;
+        margin: auto;
+        position: absolute;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        right: 0;
       }
 
       .centered {
         text-align: center;
         justify-content: center;
         align-content: center;
-      }
-
-      .fullwidth {
-        width: 100%;
-      }
-
-      img {
-        height: 100%;
-        width: auto;
       }
 
       .hidden {
@@ -71,9 +75,9 @@
           </h4>
         </div>
       </div>
-      <div id="screenshot" class="row middle centered embed-responsive">
-        <video class="fullsize embed-responsive-item" autoplay=""></video>
-        <img class="fullsize hidden embed-responsive-item"/>
+      <div id="screenshot" class="row middle embed-responsive">
+        <video class="embed-responsive-item" autoplay=""></video>
+        <img class="hidden" />
       </div>
       <div class="row bottom">
         <button class="col btn" id="btnCapture">Capture video</button>
@@ -134,7 +138,6 @@
       function showCameraRunningUI() {
         btnCapture.disabled = true;
         btnScreenshot.disabled = false;
-        // btnSwitchCamera.disabled = true;
         video.classList.remove("hidden");
         img.classList.add("hidden");
       }
@@ -142,7 +145,6 @@
       function showCameraStoppedUI() {
         btnCapture.disabled = false;
         btnScreenshot.disabled = true;
-        // btnSwitchCamera.disabled = false;
         video.classList.add("hidden");
         img.classList.remove("hidden");
       }
@@ -203,7 +205,10 @@
         http.onreadystatechange = function() {
           //Call a function when the state changes.
           if (http.readyState == 4 && http.status == 200) {
-            alert(http.responseText);
+            // We use set timeout here to ensure we don't interrupt a render with the alert
+            setTimeout(() => {
+              alert(http.responseText);
+            }, 0);
           }
         };
 
