@@ -36,17 +36,11 @@
         height: 80vh;
         width: auto;
         margin: 0 auto;
-        position: relative;
       }
 
       .middle img {
-        height: 100%;
-        margin: auto;
-        position: absolute;
-        top: 0;
-        left: 0;
-        bottom: 0;
-        right: 0;
+        max-height: 100%;
+        max-width: 100%;
       }
 
       .centered {
@@ -77,7 +71,7 @@
       </div>
       <div id="screenshot" class="row middle embed-responsive">
         <video class="embed-responsive-item" autoplay=""></video>
-        <img class="hidden" />
+        <img class="hidden rounded mx-auto d-block" />
       </div>
       <div class="row bottom">
         <button class="col btn" id="btnCapture">Capture video</button>
@@ -118,8 +112,11 @@
         // Reference: https://developer.mozilla.org/en-US/docs/Web/API/MediaDevices/getUserMedia
         constraints = {
           video: {
-            width: { min: 776, ideal: 720, max: 1080 },
-            height: { min: 1024, ideal: 1280, max: 1920 },
+            // width: { min: 776, ideal: 720, max: 1080 },
+            // height: { min: 1024, ideal: 1280, max: 1920 },
+
+            width: { ideal: 1920 },
+            height: { ideal: 1080 },
             facingMode: front ? "user" : "environment"
           }
         };
@@ -229,17 +226,22 @@
       };
       // Take screenshot & upload
       btnScreenshot.onclick = video.onclick = function() {
-        let source = snapshotVideo();
-        img.src = source;
+        // TODO: Fix or hide the judder between video stop and image shown
         showCameraStoppedUI();
-        stopStream();
-        upload(source);
+        // setTimeout to ensure render completes
+        setTimeout(() => {
+          let source = snapshotVideo();
+          img.src = source;
+          stopStream();
+          upload(source);
+        }, 0);
       };
       // Handle camera switching
       btnSwitchCamera.onclick = function() {
         front = !front;
         stopStream();
         configureCamera();
+        // setTimeout to ensure stream stops
         setTimeout(() => {
           startStream();
           showCameraRunningUI();
